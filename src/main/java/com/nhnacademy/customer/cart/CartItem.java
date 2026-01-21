@@ -24,30 +24,42 @@ public class CartItem implements Serializable {
 
     public CartItem(long productId, int quantity) {
         // TODO#2-6 productId < 0 또는 quantity < 0이면 IllegalArgumentException이 발생합니다.
-
+        if(productId < 0 || quantity < 0){
+            throw new IllegalArgumentException();
+        }
+        this.productId = productId;
+        this.quantity = quantity;
         // TODO#2-7 productId, quantity를 초기화합니다.
     }
 
     public long getProductId() {
         // TODO#2-8 productId를 반환합니다.
-        return 0L;
+        return this.productId;
     }
 
     public int getQuantity() {
         // TODO#2-9 quantity를 반환합니다.
-        return 0;
+        return this.quantity;
     }
 
     // TODO#2-10 (productId, quantity)를 기준으로 객체 비교를 하기 위해 equals()를 구현합니다.
 
     @Override
     public boolean equals(Object o) {
-        return false;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CartItem cartitem = (CartItem)o;
+
+        if (cartitem.getProductId() != this.getProductId()) return false;
+        return cartitem.getQuantity() == this.getQuantity();
     }
 
     // TODO#2-11 (productId, quantity)를 기준으로 hashCode()를 구현합니다.
     @Override
     public int hashCode() {
-        return 0;
+        int result = (int) this.getProductId();
+        result = 31 * result + this.getQuantity();
+        return result;
     }
 }
