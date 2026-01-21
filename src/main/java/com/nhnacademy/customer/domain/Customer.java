@@ -77,15 +77,23 @@ public class Customer {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Customer customer)) return false;
-        return id == customer.id
-                && money == customer.money
-                && Objects.equals(name, customer.name);
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Customer customer = (Customer) o;
+
+        if (customer.getId() != this.getId()) return false;
+        if (customer.getMoney() != this.getMoney()) return false;
+        return this.getName() != null
+                ? this.getName().equals(customer.getName())
+                : customer.getName() == null;
     }
 
     // TODO#1-11 (id, name, money) 기준으로 hashCode()를 구현합니다.
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, money);
+        int result = (int) id;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + money;
+        return result;
     }
 }
