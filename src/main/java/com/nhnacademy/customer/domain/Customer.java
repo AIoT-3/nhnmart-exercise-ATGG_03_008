@@ -14,23 +14,22 @@ package com.nhnacademy.customer.domain;
 
 import com.nhnacademy.customer.exception.InsufficientFundsException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Objects;
 
 @Slf4j
 public class Customer {
 
-    private long id;
-    private String name;
-
+    private final long id;
+    private final String name;
     private int money;
 
     public Customer(long id, String name, int money) {
         // TODO#1-1 id < 1 또는 name이 null이거나 ""인 경우, 또는 money < 0이면 IllegalArgumentException이 발생합니다.
-    if( id < 1 || name == null ||name.isBlank() || money < 0 ) {
-        throw new IllegalArgumentException();
-    }
+        if (id < 1 || name == null || name.isBlank() || money < 0) {
+            throw new IllegalArgumentException();
+        }
+
         // TODO#1-2 id, name, money를 초기화합니다.
         this.id = id;
         this.name = name;
@@ -54,13 +53,15 @@ public class Customer {
 
     public void pay(int amount) throws InsufficientFundsException {
         // TODO#1-6 amount(결제할 금액) < 0이면 IllegalArgumentException이 발생합니다.
-        if(amount < 0){
+        if (amount < 0) {
             throw new IllegalArgumentException();
         }
+
         // TODO#1-7 money(회원 보유 금액) < amount(결제할 금액)이면 InsufficientFundsException이 발생합니다.
-        if(money < amount ){
+        if (this.money < amount) {
             throw new InsufficientFundsException();
         }
+
         // TODO#1-8 메서드를 구현합니다. money에서 amount만큼 차감합니다.
         this.money -= amount;
         log.debug("customer: {}, pay : {}", this, amount);
@@ -69,21 +70,22 @@ public class Customer {
     @Override
     public String toString() {
         // TODO#1-9 id, name, money가 반환될 수 있도록 구현합니다.
-        return "id: "+this.id+", name: "+this.name+", money: " + this.money;
+        return "id: " + this.id + ", name: " + this.name + ", money: " + this.money;
     }
 
     // TODO#1-10 Customer 객체 비교를 위해 구현합니다. (비교 기준: id, name, money 일치)
     @Override
     public boolean equals(Object o) {
-        Customer customer = (Customer) o;
-        return this.getId() == customer.getId()
-                && Objects.equals(this.getName(), customer.getName())
-                && this.getMoney() == customer.getMoney();
+        if (this == o) return true;
+        if (!(o instanceof Customer customer)) return false;
+        return id == customer.id
+                && money == customer.money
+                && Objects.equals(name, customer.name);
     }
 
     // TODO#1-11 (id, name, money) 기준으로 hashCode()를 구현합니다.
     @Override
     public int hashCode() {
-      return Objects.hash(id,name, money);
- }
+        return Objects.hash(id, name, money);
+    }
 }
