@@ -12,6 +12,7 @@
 
 package com.nhnacademy.thread.util;
 
+import com.nhnacademy.thread.ThreadPool;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -35,14 +36,16 @@ class RequestChannelTest {
         long queueSize = (long) readFieldValue.get();
 
         //TODO#8-2-8 기본 생성자를 이용해서 생성된 requestChannel의 queueSize가 10인지 검증합니다.
-
+        assertEquals( 10, queueSize);
     }
 
     @Test
     @DisplayName("queueSize=-5")
     void constructorTest2(){
         //TODO#8-2-9 RequestChannel 객체 생성 시 queueSize가 -5이면 IllegalArgumentException이 발생하는지 검증합니다.
-
+        assertThrows(IllegalArgumentException.class, ()->{
+            new RequestChannel(-5);
+        });
     }
 
     @Test
@@ -50,13 +53,17 @@ class RequestChannelTest {
     void addRequest_5_times() throws Exception {
         RequestChannel requestChannel = new RequestChannel();
         //TODO#8-2-10 requestChannel에 5개의 아무것도 실행하지 않는 작업(Executable)을 등록합니다. Executable: ()->{}를 사용합니다.
-
+        requestChannel.addRequest(()->{});
+        requestChannel.addRequest(()->{});
+        requestChannel.addRequest(()->{});
+        requestChannel.addRequest(()->{});
+        requestChannel.addRequest(()->{});
 
         Try<Object> readFieldValue = ReflectionUtils.tryToReadFieldValue(RequestChannel.class, "requestQueue", requestChannel);
         Queue queue = (Queue) readFieldValue.get();
-
         Assertions.assertEquals(5,queue.size());
     }
+
     @Test
     @DisplayName("addRequest : 11 times, waiting")
     void addRequest_11tiems() throws Exception {
@@ -66,6 +73,14 @@ class RequestChannelTest {
 
         Thread thread = new Thread(()->{
             //TODO#8-2-11 requestChannel에 11개의 빈 작업을 등록하는 스레드를 구현하세요. 빈 작업: ()->{}
+            try {
+                for (int i = 0; i < 11; i++) {
+                    requestChannel.addRequest(() -> {});
+                }
+            } catch (InterruptedException e) {
+                // 테스트에서는 보통 인터럽트 받으면 종료 처리
+                Thread.currentThread().interrupt();
+            }
         });
 
         thread.start();
@@ -90,6 +105,9 @@ class RequestChannelTest {
         }
         //TODO#8-2-12 requestChannel 작업을 할당받아 실행하세요.
 
+        Executable executable = requestChannel.getRequest();
+        executable.execute();
+
         Try<Object> readFieldValue = ReflectionUtils.tryToReadFieldValue(RequestChannel.class, "requestQueue", requestChannel);
         Queue queue = (Queue) readFieldValue.get();
 
@@ -104,7 +122,11 @@ class RequestChannelTest {
         RequestChannel requestChannel = new RequestChannel(10);
 
         Thread thread = new Thread(()->{
-            requestChannel.getRequest();
+            try {
+                requestChannel.getRequest();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         });
         thread.setName("my-thread");
         thread.start();
@@ -114,7 +136,7 @@ class RequestChannelTest {
         log.debug("{} : {}", thread.getName(),thread.getState());
 
         //TODO#8-2-13 스레드의 상태가 WAITING 상태인지 검증합니다.
-
+            assertEquals(Thread.State.WAITING, thread.getState());
 
         thread.interrupt();
     }
