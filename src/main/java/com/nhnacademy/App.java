@@ -26,20 +26,20 @@ public class App
     public static void main( String[] args )
     {
         //capacity를 100으로 enteringQueue를 초기화합니다.
-        EnteringQueue enteringQueue = null;
+        EnteringQueue enteringQueue = new EnteringQueue(100);
 
         // CustomerGenerator를 이용해서 Thread를 생성합니다.
-        CustomerGenerator customerGenerator = null;
-        Thread enteringThread = null;
+        CustomerGenerator customerGenerator = new CustomerGenerator(enteringQueue);
+        Thread enteringThread = new Thread(customerGenerator);
 
         // enteringThread의 이름을 'entering-thread'로 설정, enteringThread를 시작합니다.
-
+        enteringThread.setName("entering-thread");
         // TODO#7-1 MemoryProductRepository 구현체를 이용해서 ProductRepository 객체를 생성합니다.
-        ProductRepository productRepository = null;
+        ProductRepository productRepository = new MemoryProductRepository();
         // TODO#7-2 CsvProductParser 구현체를 이용해서 ProductParser 객체를 생성합니다.
-        ProductParser productParser = null;
+        ProductParser productParser = new CsvProductParser();
         // TODO#7-3 ProductServiceImpl 구현체를 이용해서 ProductService 객체를 생성합니다.
-        ProductService productService = null;
+        ProductService productService = new ProductServiceImpl(productRepository, productParser);
 
     }
 }
