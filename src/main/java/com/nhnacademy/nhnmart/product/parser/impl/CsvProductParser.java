@@ -24,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,17 +35,20 @@ import java.util.Objects;
 public class CsvProductParser implements ProductParser {
 
     // 제품의 기본 수량 = 100개
-    private final int DEFAULT_QUANTITY=100;
+    private final int DEFAULT_QUANTITY = 100;
     private InputStream inputStream;
 
     public CsvProductParser() {
         // TODO#6-2-1 기본 생성자 구현, getProductsStream()을 이용해서 inputStream을 초기화합니다.
-
+        inputStream = getProductsStream();
     }
 
-    public CsvProductParser(InputStream inputStream){
+    public CsvProductParser(InputStream inputStream) {
         // TODO#6-2-2 inputStream parameter로 전달됩니다. 초기화합니다.
-
+        if(inputStream == null){
+            throw new IllegalArgumentException();
+        }
+        this.inputStream = inputStream;
     }
 
     @Override
@@ -55,13 +60,40 @@ public class CsvProductParser implements ProductParser {
          */
         List<Product> products = new ArrayList<>();
 
+        try (Reader in = new InputStreamReader(inputStream)){
+            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+                    .setHeader("품목","메이커","스펙","단위","가격")
+                    .setSkipHeaderRecord(true)
+                    .build();
+
+            Iterable<CSVRecord> records = csvFormat.parse(in);
+
+            for (CSVRecord record : records) {
+                long id = ProductIdGenerator.getNewId();
+
+                String item = record.get("품목");
+                String maker = record.get("메이커");
+                String specification = record.get("스펙");
+                String unit = record.get("단위");
+
+                String priceStr = record.get("가격").replace(",", "");
+                int price = Integer.parseInt(priceStr);
+
+                products.add(new Product(id, item, maker, specification, unit, price, DEFAULT_QUANTITY));
+            }
+        } catch (IOException | NumberFormatException e) {
+            throw new CsvParsingException();
+        }
 
         return products;
     }
 
+
     @Override
     public void close() throws IOException {
         // TODO#6-2-5 inputStream 객체가 존재하면 close() 메서드를 호출해서 자원을 해제합니다.
-        
+        if (inputStream != null) {
+            inputStream.close();
+        }
     }
 }

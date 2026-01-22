@@ -12,14 +12,17 @@
 
 package com.nhnacademy.nhnmart.product.parser.impl;
 
+import com.nhnacademy.nhnmart.product.domain.Product;
 import com.nhnacademy.nhnmart.product.exception.CsvParsingException;
 import com.nhnacademy.nhnmart.product.parser.ProductParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Objects;
 
 public class CsvProductParserFailTest {
 
@@ -39,5 +42,10 @@ public class CsvProductParserFailTest {
             }
         */
 
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("product_data_fail.csv");
+
+        ProductParser parser = new CsvProductParser(inputStream);
+
+        Assertions.assertThrows(CsvParsingException.class, parser::parse);
     }
 }

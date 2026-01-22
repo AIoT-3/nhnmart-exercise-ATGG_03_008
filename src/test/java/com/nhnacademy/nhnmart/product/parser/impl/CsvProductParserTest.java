@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 @Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CsvProductParserTest {
@@ -31,20 +33,20 @@ class CsvProductParserTest {
     static void beforeSetUp(){
         // @BeforeAll은 CsvProductParserTest에서 테스트 시작 전 한 번 실행됩니다.
         // TODO#6-2-6 CsvProductParser 객체를 생성합니다.
-        productParser = null;
+        productParser = new CsvProductParser();
     }
     @AfterAll
     static void tearDown() throws IOException {
         // @AfterAll은 CsvProductParserTest 테스트 종료 시점에 한 번 실행됩니다.
         // TODO#6-2-7 CsvProductParserTest 종료되면 productParser.close()를 호출하여 자원을 해제합니다.
-
+        productParser.close();
     }
 
     @Test
     @Order(1)
     @DisplayName("instance of ProductParser")
     void constructorTest1(){
-
+    assertInstanceOf(ProductParser.class, productParser);
     }
 
     @Test
@@ -53,6 +55,9 @@ class CsvProductParserTest {
     void constructorTest2(){
         // TODO#6-2-8 CsvProductParser 객체 생성 시 inputStream == null이면 IllegalArgumentException이 발생하는지 검증합니다.
 
+        assertThrows(IllegalArgumentException.class, ()-> {
+            new CsvProductParser(null);
+        });
     }
 
     @Test
@@ -68,6 +73,15 @@ class CsvProductParserTest {
     void parse() {
 
         // TODO#6-2-9 actual과 excepted가 일치하는지 검증합니다.
+        List<Product> actual = productParser.parse();
 
+        Product p = actual.get(0);
+
+        assertEquals("주방세제", p.getItem());
+        assertEquals("LG", p.getMaker());
+        assertEquals("(750㎖) 자연퐁 스팀워시 레몬", p.getSpecification());
+        assertEquals("개", p.getUnit());
+        assertEquals(9900, p.getPrice());
     }
+
 }
