@@ -19,12 +19,15 @@ public class App {
     public static void main(String[] args) {
 
         //TODO#5-1 capacity를 100으로 enteringQueue를 초기화합니다.
-
+        EnteringQueue enteringQueue = new EnteringQueue(100);
 
         //TODO#5-2 customerGenerator를 이용해서 thread를 생성합니다.
+        CustomerGenerator customerGenerator = new CustomerGenerator(enteringQueue);
+        Thread enteringThread = new Thread(customerGenerator);
 
 
         //TODO#5-3 enteringThread의 이름을 'entering-thread'로 설정, enteringThread를 시작합니다.
-
+        enteringThread.setName("entering-thread");
+        enteringThread.start();
     }
 }

@@ -26,49 +26,65 @@ import java.util.Queue;
 @Slf4j
 public class EnteringQueue {
 
-    // Queue를 이용해서 mart 입장 대기열을 구현합니다.
-    private final Queue<Customer> queue;
+    //queue를 이용해서 mart 입장 대기열을 구현합니다.
+    private Queue<Customer> queue;
 
-    // 기본 대기열 QueueSize = 100명
+    //기본 대기열 QueueSize = 100명
     private static final int DEFAULT_CAPACITY = 100;
-    private final int capacity;
+    private int capacity;
     public EnteringQueue(){
-        // TODO#3-1 기본 생성자 구현, capacity = DEFAULT_CAPACITY 입니다.
-        this.capacity = 0;
-        this.queue = null;
+        // TODO#3-1 기본 생성자 구현, capacity = DEFAULT_CAPACITY입니다.
+        capacity = DEFAULT_CAPACITY;
+        this.queue = new LinkedList<>();
     }
 
     public EnteringQueue(int capacity) {
         // TODO#3-2 capacity <= 0이면 IllegalArgumentException이 발생합니다.
-
-
+        if(capacity <= 0){
+            throw new IllegalArgumentException();
+        }
         // TODO#3-3 capacity와 queue를 초기화합니다.
-        this.capacity = 0;
-        this.queue = null;
+        this.capacity = capacity;
+        this.queue = new LinkedList<>();
     }
 
-    public synchronized void addCustomer(Customer customer){
+    public synchronized void addCustomer(Customer customer) throws InterruptedException {
         /* TODO#3-4 대기열에 고객을 추가하는 메서드를 구현합니다.
            - queue.size() >= capacity이면 대기할 수 있도록 구현합니다.
         */
-
+        while (queue.size() >= capacity) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
 
         // TODO#3-5 queue에 고객을 추가하고 대기하고 있는 Thread를 깨웁니다.
-
+        queue.add(customer);
+        notifyAll();
     }
 
-    public synchronized Customer getCustomer(){
+    public synchronized Customer getCustomer() throws InterruptedException {
         // TODO#3-6 queue가 비어 있다면 대기합니다.
-
-
-        // TODO#3-7 queue에서 customer를 반환합니다. 대기하고 있던 Thread를 깨웁니다.
-
-        return null;
+        while (queue.isEmpty()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        // TODO#3-7 queue에서 Customer를 반환합니다. 대기하고 있던 Thread를 깨웁니다.
+        try{
+            return queue.remove();
+        }finally {
+            notifyAll();
+        }
     }
 
     // TODO#3-8 queue size를 반환합니다.
     public int getQueueSize(){
-        return 0;
+        return queue.size();
     }
 
 }
