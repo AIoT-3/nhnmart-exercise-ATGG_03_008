@@ -32,16 +32,18 @@ public class SelfCheckoutRequest implements Executable {
 
     public SelfCheckoutRequest(Customer customer, Cart cart, ProductService productService) {
         // TODO#9-2-1 customer, cart, productService가 null이면 IllegalArgumentException 발생
-
+        if(customer == null || cart == null || productService == null){
+            throw new IllegalArgumentException();
+        }
 
         // TODO#9-2-2 customer, cart, productService 초기화
-        this.customer = null;
-        this.cart = null;
-        this.productService = null;
+        this.customer = customer;
+        this.cart = cart;
+        this.productService = productService;
     }
 
     @Override
-    public void execute(){
+    public void execute()  {
 
         /* TODO#9-2-3 execute 메서드를 구현합니다.
            - getTotalAmountFromCart() - 결제 금액을 계산하는 메서드
@@ -50,19 +52,25 @@ public class SelfCheckoutRequest implements Executable {
         */
 
 
-
         try {
-            // 1초 단위로 결제를 진행합니다.
+            customer.pay(getTotalAmountFromCart());
             Thread.sleep(1000);
+        } catch (InsufficientFundsException e) {
+            for (CartItem c : cart.getCartItems()) {
+                productService.returnProduct(c.getProductId(), c.getQuantity());
+            }
         } catch (InterruptedException e) {
-            // TODO#9-2-3 InterruptedException 발생 시 RuntimeException을 던집니다.
-
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
         }
     }
 
     public int getTotalAmountFromCart(){
         // TODO#9-2-4 결제 금액을 계산 후 반환합니다.
-
-        return 0;
+        int totalAmount = 0;
+        for(CartItem c : cart.getCartItems()){
+            totalAmount +=productService.getProduct(c.getProductId()).getPrice() * c.getQuantity();
+        }
+        return totalAmount;
     }
 }

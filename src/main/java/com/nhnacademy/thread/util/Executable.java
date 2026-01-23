@@ -12,6 +12,8 @@
 
 package com.nhnacademy.thread.util;
 
+import com.nhnacademy.customer.exception.InsufficientFundsException;
+
 public interface Executable {
-    void execute() throws InterruptedException;
+    void execute() throws InterruptedException, InsufficientFundsException;
 }

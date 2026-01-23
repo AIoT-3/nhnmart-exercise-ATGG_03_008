@@ -15,6 +15,7 @@ package com.nhnacademy.thread.scc;
 import com.nhnacademy.customer.cart.Cart;
 import com.nhnacademy.customer.cart.CartItem;
 import com.nhnacademy.customer.domain.Customer;
+import com.nhnacademy.customer.exception.InsufficientFundsException;
 import com.nhnacademy.nhnmart.product.domain.Product;
 import com.nhnacademy.nhnmart.product.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ import org.mockito.stubbing.Answer;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 
@@ -84,25 +86,36 @@ class SelfCheckoutRequestTest {
         // customer, cart, productService를 검증합니다.
 
         Assertions.assertAll(
-            ()->Assertions.assertTrue(true)
+            ()->Assertions.assertThrows(IllegalArgumentException.class, ()->{
+                new SelfCheckoutRequest(null,cart,productService);
+            }),
+
+             ()->Assertions.assertThrows(IllegalArgumentException.class, ()->{
+                 new SelfCheckoutRequest(customer,null,productService);
+             }),
+
+              ()->Assertions.assertThrows(IllegalArgumentException.class, ()->{
+                 new SelfCheckoutRequest(customer,cart,null);
+              })
         );
+
     }
 
     @Test
     @DisplayName("결제 후 고객의 money 검증")
-    void execute1() {
+    void execute1() throws InsufficientFundsException {
         customer = new Customer(1L,"NHN아카데미1",100_0000);
         selfCheckoutRequest = new SelfCheckoutRequest(customer,cart,productService);
 
         selfCheckoutRequest.execute();
 
         // TODO#9-2-5 customer money : 100_0000 - 18800 = 981200 검증합니다.
-
+        assertEquals(981200, customer.getMoney());
     }
 
     @Test
     @DisplayName("결제 시도, 고객의 money 부족")
-    void execute2(){
+    void execute2() throws InsufficientFundsException {
         /*
          * 장바구니에 담긴 아이템
          * - 1L - 1개 - 9900원
@@ -120,6 +133,9 @@ class SelfCheckoutRequestTest {
 
         // TODO#9-2-7 customer의 money 부족으로 제품을 모두 반납합니다. 현재 cart에 {1L,2L} 제품이 있으므로 productService.returnProduct() 2회 호출됩니다.
         // Mockito.verify()를 이용해서 검증합니다.
+        Mockito.verify(productService, Mockito.times(1)).returnProduct(1L,1);
+        Mockito.verify(productService, Mockito.times(1)).returnProduct(2L,1);
+        Mockito.verify(productService, Mockito.times(2)).returnProduct(Mockito.anyLong(), Mockito.anyInt());
 
 
     }
@@ -138,6 +154,6 @@ class SelfCheckoutRequestTest {
         selfCheckoutRequest = new SelfCheckoutRequest(customer,cart,productService);
 
         int totalAmountFromCart = selfCheckoutRequest.getTotalAmountFromCart();
-        Assertions.assertEquals(18800, totalAmountFromCart);
+        assertEquals(18800, totalAmountFromCart);
     }
 }

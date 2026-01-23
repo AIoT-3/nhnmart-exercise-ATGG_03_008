@@ -62,7 +62,15 @@ class CustomerShoppingHandlerTest {
         // - enteringQueue, productService, checkoutChannel
 
         Assertions.assertAll(
-            ()->Assertions.assertTrue(true)
+            ()-> assertThrows( IllegalArgumentException.class, ()->{
+                new CustomerShoppingHandler(null,productService,checkoutChannel);
+            }),
+            ()-> assertThrows( IllegalArgumentException.class, ()->{
+                 new CustomerShoppingHandler(enteringQueue,null,checkoutChannel);
+            }),
+            ()-> assertThrows( IllegalArgumentException.class, ()->{
+                new CustomerShoppingHandler(enteringQueue,productService,null);
+            })
         );
     }
 
@@ -80,11 +88,11 @@ class CustomerShoppingHandlerTest {
         }
 
         methodOptional.get().setAccessible(true);
-        // methodOptional.get().invoke(customerShoppingHandler);
+         methodOptional.get().invoke(customerShoppingHandler);
 
         // TODO#9-1-12 Mockito.verify()를 이용해서 checkoutChannel.addRequest()가 1회 호출되었는지 검증합니다.
         // checkoutChannel.addRequest()를 호출해서 결제 대기열에 등록합니다.
-
+        Mockito.verify(checkoutChannel, Mockito.times(1)).addRequest(Mockito.any());
     }
 
     @Order(3)
@@ -105,7 +113,7 @@ class CustomerShoppingHandlerTest {
         log.debug("{actual:{}}",actual);
 
         // TODO#9-1-13 1 <= actual <= 5 검증합니다.
-
+        assertTrue(1 <= actual && actual <= 5);
     }
 
     @Order(4)
@@ -123,7 +131,7 @@ class CustomerShoppingHandlerTest {
         log.debug("{actual:{}}",actual);
 
         // TODO#9-1-14 1 <= actual <= 10 검증합니다.
-
+        assertTrue(1 <= actual && actual <= 10);
     }
 
     @Order(5)
@@ -145,7 +153,7 @@ class CustomerShoppingHandlerTest {
         log.debug("totalCount:{}, actual:{}",totalCount, actual);
 
         // TODO#9-1-15 actual <= totalCount인지 검증합니다.
-
+        assertTrue(actual<= totalCount) ;
     }
 
 }
